@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="dong.lan.labeltextview.MainActivity">
+
+    <dong.lan.library.LabelTextView
+        android:layout_margin="20dp"
+        android:padding="16dp"
+        android:textSize="20sp"
+        app:radius="30dp"
+        android:textColor="#ffffff"
+        app:bg_color="@color/colorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="LabelTextView"
+        />
+
+
+    <dong.lan.library.LabelTextView
+        android:layout_margin="20dp"
+        android:padding="16dp"
+        android:textSize="20sp"
+        app:radius="30dp"
+        app:strokeWidth="1dp"
+        android:textColor="@color/colorAccent"
+        app:bg_color="@color/colorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="LabelTextView"
+        />
+
+</LinearLayout>
