@@ -9,6 +9,9 @@
         <attr name="shadowRadius" format="dimension" />
         <attr name="shadowColor" format="color" />
         <attr name="strokeWidth" format="dimension" />
+        <attr name="innerCircle" format="boolean"/>
+        <attr name="sweepStroke" format="dimension"/>
+        <attr name="sweepPadding" format="dimension"/>
     </declare-styleable>
 
 

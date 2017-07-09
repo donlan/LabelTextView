@@ -1,4 +1,4 @@
-package dong.lan.library;
+package dong.lan.labelTextview;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

@@ -7,12 +7,14 @@
     android:orientation="vertical"
     tools:context="dong.lan.labeltextview.MainActivity">
 
-    <dong.lan.library.LabelTextView
+    <dong.lan.labelTextview.LabelTextView
+        android:id="@+id/text1"
         android:layout_margin="20dp"
         android:padding="16dp"
         android:textSize="20sp"
         app:radius="30dp"
         android:textColor="#ffffff"
+        app:innerCircle="true"
         app:bg_color="@color/colorPrimary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -20,7 +22,7 @@
         />
 
 
-    <dong.lan.library.LabelTextView
+    <dong.lan.labelTextview.LabelTextView
         android:layout_margin="20dp"
         android:padding="16dp"
         android:textSize="20sp"

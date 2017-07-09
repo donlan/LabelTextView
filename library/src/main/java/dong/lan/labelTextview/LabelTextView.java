@@ -1,4 +1,4 @@
-package dong.lan.library;
+package dong.lan.labelTextview;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
@@ -6,9 +6,9 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-
 
 
 /**
@@ -26,8 +26,17 @@ public class LabelTextView extends android.support.v7.widget.AppCompatTextView {
     private float roundRadius = 0;
     private boolean clickAnimation = true;
     private Paint bgPaint;
+    private Paint loadingPaint;
     private float shadowRadius = 0;
     private RectF bgRect;
+    private RectF loadingRect;
+    private boolean needInnerCircle = false;
+
+
+    private static final int STATE_NONE = 0;
+    private static final int STATE_LOADING = 1;
+
+    private int state;
 
     private boolean refresh = false;
 
@@ -52,6 +61,9 @@ public class LabelTextView extends android.support.v7.widget.AppCompatTextView {
             shadowRadius = ta.getDimension(R.styleable.LabelTextView_shadowRadius, shadowRadius);
             shadowColor = ta.getColor(R.styleable.LabelTextView_shadowColor, shadowColor);
             strokeWidth = (int) ta.getDimension(R.styleable.LabelTextView_strokeWidth, 0);
+            needInnerCircle = ta.getBoolean(R.styleable.LabelTextView_innerCircle, false);
+            sweepStroke = ta.getDimensionPixelSize(R.styleable.LabelTextView_sweepStroke,8);
+            loadingPadding = ta.getDimensionPixelSize(R.styleable.LabelTextView_sweepPadding,10);
             ta.recycle();
         }
         bgPaint = new Paint();
@@ -61,6 +73,9 @@ public class LabelTextView extends android.support.v7.widget.AppCompatTextView {
             bgPaint.setStrokeCap(Paint.Cap.ROUND);
             bgPaint.setStrokeJoin(Paint.Join.ROUND);
         }
+        loadingPaint = new Paint();
+        loadingPaint.setColor(bgColor);
+        loadingPaint.setAntiAlias(true);
         bgPaint.setColor(bgColor);
         bgPaint.setAntiAlias(true);
         setLayerType(LAYER_TYPE_SOFTWARE, null);
@@ -92,6 +107,10 @@ public class LabelTextView extends android.support.v7.widget.AppCompatTextView {
         super.invalidate();
     }
 
+    public boolean isLoading() {
+        return state == STATE_LOADING;
+    }
+
     @Override
     public float getShadowRadius() {
         return shadowRadius;
@@ -99,7 +118,7 @@ public class LabelTextView extends android.support.v7.widget.AppCompatTextView {
 
     public void setShadowRadius(float shadowRadius) {
         this.shadowRadius = shadowRadius;
-        bgPaint.setShadowLayer(shadowRadius,0,0,shadowColor);
+        bgPaint.setShadowLayer(shadowRadius, 0, 0, shadowColor);
         invalidate();
     }
 
@@ -133,17 +152,89 @@ public class LabelTextView extends android.support.v7.widget.AppCompatTextView {
         super.setText(text, type);
     }
 
+
+    private int startAngle = 0;
+    private int sweepAngle = 20;
+    private int loadingPadding = 10;
+    private int innerR = 1;
+    private boolean flag = true;
+    private int sweepStroke = 8;
     @Override
     protected void onDraw(Canvas canvas) {
-        float r = shadowRadius / 2+strokeWidth;
-        if (bgRect == null) {
-            bgRect = new RectF(r, r, getWidth() - r, getHeight() - r);
-        } else if (refresh) {
-            bgRect.set(r, r, getWidth() - r, getHeight() - r);
-            refresh = false;
+        float r = shadowRadius / 2 + strokeWidth;
+        if (state == STATE_LOADING) {
+            int radius;
+            if (getWidth() < getHeight()) {
+                radius = (getWidth() - sweepStroke) / 2;
+            } else {
+                radius = (getHeight() - sweepStroke) / 2;
+            }
+
+            int l = getWidth() / 2;
+            int rr = getHeight() / 2;
+            loadingPaint.setColor(bgColor);
+            loadingPaint.setStyle(Paint.Style.FILL);
+            canvas.drawCircle(l, rr, radius, loadingPaint);
+            if (needInnerCircle) {
+                if (flag) {
+                    innerR += 5;
+                    if (innerR >= radius / 3)
+                        flag = false;
+                } else {
+                    innerR -= 5;
+                    if (innerR < 1)
+                        flag = true;
+                }
+                loadingPaint.setColor(textColor);
+                canvas.drawCircle(l, rr, innerR, loadingPaint);
+            }
+            startAngle += 30;
+            if (startAngle > 360)
+                startAngle = 0;
+            sweepAngle += 10;
+            if (sweepAngle > 270)
+                sweepAngle = 10;
+            if (loadingRect == null) {
+                loadingRect = new RectF(l - radius + loadingPadding, loadingPadding, l + radius - loadingPadding, (radius) * 2 + sweepStroke/2 - loadingPadding);
+            } else {
+                loadingRect.set(l - radius + loadingPadding, loadingPadding, l + radius - loadingPadding, (radius) * 2 + sweepStroke/2 - loadingPadding);
+            }
+            loadingPaint.setStrokeWidth(sweepStroke);
+            loadingPaint.setStyle(Paint.Style.STROKE);
+            canvas.drawArc(loadingRect, startAngle, sweepAngle, false, loadingPaint);
+            postInvalidateDelayed(150);
+        } else {
+            if (bgRect == null) {
+                bgRect = new RectF(r, r, getWidth() - r, getHeight() - r);
+            } else if (refresh) {
+                bgRect.set(r, r, getWidth() - r, getHeight() - r);
+                refresh = false;
+            }
+            canvas.drawRoundRect(bgRect, roundRadius, roundRadius, bgPaint);
         }
-        canvas.drawRoundRect(bgRect, roundRadius, roundRadius, bgPaint);
         super.onDraw(canvas);
+    }
+
+    private String mText;
+    private int textColor;
+
+    public void startLoading() {
+        if (state != STATE_LOADING) {
+            mText = getText().toString();
+            state = STATE_LOADING;
+            textColor = getTextColors().getDefaultColor();
+            setTextColor(0x00000000);
+        }
+    }
+
+    public void finishLoading(String text) {
+        state = STATE_NONE;
+        if(TextUtils.isEmpty(text)){
+            invalidate();
+        }else {
+            setTextColor(textColor);
+            setText(text);
+        }
     }
 
     @Override
